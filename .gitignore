@@ -1,5 +1,5 @@
 *.so
-inc/gen/*.h
+inc/gen
 .build/
 test/*.o
 test/gmrtest
