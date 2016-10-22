@@ -6,7 +6,7 @@ Tool for reading makefiles and extracting targets and files involved. Useful if 
 
 ## Dependencies:
 
-glib & makeheaders (http://www.hwaci.com/sw/mkhdr/)(https://aur.archlinux.org/packages/makeheaders/)
+glib & makeheaders (http://www.hwaci.com/sw/mkhdr/) or (https://aur.archlinux.org/packages/makeheaders/)
 
 ## Compile with:
 
