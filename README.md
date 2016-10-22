@@ -1,10 +1,16 @@
-== GNU-MAKE READER ==
+# GNU-MAKE READER
 
-dependencies:
+## Dependencies:
 	glib & makeheaders (http://www.hwaci.com/sw/mkhdr/)(https://aur.archlinux.org/packages/makeheaders/)
 
-compile with:
+## Compile with:
 
-``
+```shell
 	make -j
-´´
+```
+
+## Test (& compile) with:
+
+```shell
+	make run -j
+```
