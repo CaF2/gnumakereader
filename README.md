@@ -2,10 +2,11 @@
 
 ## Description
 	
-	Tool for reading makefiles and extracting files involved, useful if you want makefile functionality in your IDE.
+Tool for reading makefiles and extracting targets and files involved. Useful if you want to implement makefile support to your IDE.
 
 ## Dependencies:
-	glib & makeheaders (http://www.hwaci.com/sw/mkhdr/)(https://aur.archlinux.org/packages/makeheaders/)
+
+glib & makeheaders (http://www.hwaci.com/sw/mkhdr/)(https://aur.archlinux.org/packages/makeheaders/)
 
 ## Compile with:
 
