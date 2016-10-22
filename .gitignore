@@ -1,6 +1,6 @@
 *.so
-./inc/gen/*.h
+inc/gen/*.h
 .build/
-./test/*.o
-./test/gmrtest
+test/*.o
+test/gmrtest
 info
