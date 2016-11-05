@@ -18,9 +18,86 @@ FILE *shell_execute_from_buffer(const char *str)
 
 	if (fp == NULL)
 	{
-		printf("Failed to run command\n" );
+		GMR_DEBUG("Failed to run command ...\n" );
 		exit(1);
 	}
 	
 	return fp;
 }
+
+/*
+gchar **shell_execute_from_buffer2(const char *command)
+{
+	GMR_DEBUG("got command %s\n",command);
+
+	gchar *stdoutstr = NULL;
+	GError *error = NULL;
+	GCancellable *cancellable = NULL;
+
+	GSubprocess *subprocess=g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "sh", "-c",command,NULL);
+
+	if(!subprocess)
+	{
+		g_assert(error != NULL);
+		return NULL;
+	}
+
+	if(!g_subprocess_communicate_utf8 (subprocess, NULL, cancellable, &stdoutstr, NULL, &error))
+	{
+		g_assert(error != NULL);
+		return NULL;
+	}
+	
+	gchar **splitted=g_strsplit(stdoutstr, "\n", 0);
+	
+	g_free(stdoutstr);
+	
+	return splitted;
+}
+
+gchar *shell_execute_from_buffer3(const char *command)
+{
+	gchar *stdoutstr = NULL;
+	GError *error = NULL;
+	GCancellable *cancellable = NULL;
+
+	GSubprocess *subprocess=g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "sh", "-c",command,NULL);
+
+	if(!subprocess)
+	{
+		g_assert(error != NULL);
+		return NULL;
+	}
+
+	if(!g_subprocess_communicate_utf8 (subprocess, NULL, cancellable, &stdoutstr, NULL, &error))
+	{
+		g_assert(error != NULL);
+		return NULL;
+	}
+	
+	return stdoutstr;
+}
+
+gchar *shell_execute_from_buffer4(const char *command)
+{
+	gchar *stdoutstr = NULL;
+	GError *error = NULL;
+	GCancellable *cancellable = NULL;
+
+	GSubprocess *subprocess=g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "make", "-nB",command,NULL);
+
+	if(!subprocess)
+	{
+		g_assert(error != NULL);
+		return NULL;
+	}
+
+	if(!g_subprocess_communicate_utf8 (subprocess, NULL, cancellable, &stdoutstr, NULL, &error))
+	{
+		g_assert(error != NULL);
+		return NULL;
+	}
+	
+	return stdoutstr;
+}
+*/

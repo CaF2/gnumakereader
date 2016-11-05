@@ -11,7 +11,7 @@
 /**
 	Struct containing information about a target.
 */
-typedef struct GmrTarget
+struct GmrTarget
 {
 	char *name; ///< name of the target
 	//GList *dependancies; ///< extract all dependancies (if useful) type (char*)
@@ -21,7 +21,8 @@ typedef struct GmrTarget
 	GmrMakefile *parent; ///< parent structure
 	
 	//Flags
-	uint8_t runnable : 1; ///< look if its a runnable target like; make run, make test etc...
-	uint8_t debug : 1; ///< if this target is used for debugging in some way, like; make gdb, make ddd, make debug etc...
+	//(0=not likely,1=kinda likely (found run executable in recipie),2=very likely (target make run, make test),3=is make run (is both make run, make test and found executable))
+	uint8_t runnable : 2; ///< look if its a runnable target like; make run, make test etc... 
+	uint8_t debug : 2; ///< if this target is used for debugging in some way, like; make gdb, make ddd, make debug etc...
 	
-}GmrTarget;
+};

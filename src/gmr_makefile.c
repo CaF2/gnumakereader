@@ -18,6 +18,7 @@
 GmrMakefile *gmr_makefile_init(GmrMakefile *this,const char *path)
 {
 	this->path=g_strdup(path);
+	this->files=NULL;
 	
 	gmr_makefile_init_targets(this);
 	
@@ -36,6 +37,10 @@ GmrMakefile *gmr_makefile_init(GmrMakefile *this,const char *path)
 void gmr_makefile_finalize(GmrMakefile *this)
 {
 	free(this->path);
+	
+	g_list_free_full(this->files,gmr_file_free_wrapper);
+
+	g_list_free_full(this->targets,gmr_target_free_wrapper);
 }
 
 /**
@@ -55,8 +60,8 @@ void gmr_makefile_evaluate_targets(GmrMakefile *this)
 		const char *targetName=target->name;
 		const char *exepath=this->path;
 
-		printf("======== Running target: %s ========\n",targetName);
-			
+		GMR_DEBUG("======== Running target: %s ========\n",targetName);
+		
 		FILE *fp;
 		char path[1035];
 	
@@ -74,13 +79,15 @@ void gmr_makefile_evaluate_targets(GmrMakefile *this)
 	
 		sprintf(exestring,"cd %s && make %s -n -B",exepath,targetName);
 		//sprintf(exestring,"cd %s && make %s -n -B | grep -oh '[0-9a-zA-Z_/\\.]*\\.\\(c\\|o\\|cpp\\)'",exepath,targetName);
-	
+		
+		GMR_DEBUG("RUNNING TARGET: %s -> %s\n",targetName,exestring);
+		
 		fp=shell_execute_from_buffer(exestring);
 
 		//Read the output a line at a time - output it.
 		while(fgets(path, sizeof(path), fp) != NULL)
 		{
-			printf("got recepie: %s\n",path);
+			GMR_DEBUG("got recepie: %s\n",path);
 			gmr_target_parse_recipie(target,path);
 		}
 
@@ -112,7 +119,7 @@ void gmr_makefile_init_targets(GmrMakefile *this)
 	// Read the output a line at a time - output it.
 	while(fgets(output, sizeof(output), fp) != NULL)
 	{
-/*		printf("OUTPUT [%s]\n",output);*/
+/*		GMR_DEBUG("OUTPUT [%s]\n",output);*/
 	
 		size_t targetlen=strlen(output);
 		
@@ -128,9 +135,17 @@ void gmr_makefile_init_targets(GmrMakefile *this)
 			{
 				gchar *word = g_match_info_fetch(matchInfo, 0);
 				
-				printf("Target found: [%s]\n", word);
+				GMR_DEBUG("Target found: [%s]\n", word);
 				
-				retTargets=g_list_append(retTargets,gmr_target_init(malloc(sizeof(GmrTarget)),word,this));
+				GmrTarget *newtarget=gmr_target_init(malloc(sizeof(GmrTarget)),word,this);
+				
+				if(strcmp(word,"run")==0 || strcmp(word,"test")==0)
+					newtarget->runnable=2;
+					
+				if(strcmp(word,"debug")==0 || strcmp(word,"ddd")==0 || strcmp(word,"gdb")==0)
+					newtarget->debug=2;
+				
+				retTargets=g_list_append(retTargets,newtarget);
 				
 				g_free(word);
 		
@@ -148,20 +163,50 @@ void gmr_makefile_init_targets(GmrMakefile *this)
 }
 
 /**
+	Check if file is in the list
+	
+	@param this
+		your makefile
+	@param file
+		a file to compare with
+*/
+GmrFile *gmr_makefile_check_file(GmrMakefile *this, GmrFile *file)
+{
+	GList *l;
+	
+	for (l = this->files; l != NULL; l = l->next)
+  	{
+  		GmrFile *lFile=l->data;
+  		
+  		if(lFile==file)
+		{
+			return lFile;
+		}
+  	
+		if(strcmp(lFile->name,file->name)==0)
+		{
+			return lFile;
+		}
+	}
+	
+	return NULL;
+}
+
+/**
 	Dumps the contents from the makefile
 	
 	@param this
 		the makefile to dump
 */
-void gmr_makefile_dump(GmrMakefile *this)
+void gmr_makefile_dump(GmrMakefile *this,int config)
 {
-	puts("=== DUMPING INFORMATION ===");
+	printf("=== DUMPING INFORMATION ===\n");
 	printf("-path = '%s'\n\n",this->path);
 	
 	GList *list=this->targets;
 
 	for (GList *l = list; l != NULL; l = l->next)
   	{
-		gmr_target_dump(l->data);
+		gmr_target_dump(l->data,config);
 	}
 }

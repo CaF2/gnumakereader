@@ -20,10 +20,12 @@ int main(int argc,char *argv[])
 		EXE_PATH=argv[1];
 	
 	printf("RUNNING FROM PATH: %s\n",EXE_PATH);
-
+	
+	GMR_VERBOSE=0;
+	
 	gmr_makefile_init(&makefileTest,EXE_PATH);
 	
-	gmr_makefile_dump(&makefileTest);
+	gmr_makefile_dump(&makefileTest,0);
 	
 	gmr_makefile_finalize(&makefileTest);
 

@@ -21,6 +21,9 @@ GmrTarget *gmr_target_init(GmrTarget *this, const char *name, GmrMakefile *paren
 	this->files=NULL;
 	this->parent=parent;
 	
+	this->runnable=0;
+	this->debug=0;
+	
 	return this;
 }
 
@@ -33,29 +36,30 @@ GmrTarget *gmr_target_init(GmrTarget *this, const char *name, GmrMakefile *paren
 void gmr_target_finalize(GmrTarget *this)
 {
 	free(this->name);
+	g_list_free(this->files);
 }
 
 /**
-	Check if file is in the target
+	heap version of finalize
 	
 	@param this
-		your target
-	@param comparestr
-		a string to compare with
+		data to finalize
 */
-int gmr_target_file_check(GmrTarget *this, const char *comparestr)
+void gmr_target_free(GmrTarget *this)
 {
-	GList *l;
+	gmr_target_finalize(this);
+	free(this);
+}
 
-	for (l = this->files; l != NULL; l = l->next)
-  	{
-		if(strcmp(l->data,comparestr)==0)
-		{
-			return 1;
-		}
-	}
+/**
+	Used with gmr_makefile_finalize (g_list_free_full)
 	
-	return 0;
+	@param data
+		current data
+*/
+void gmr_target_free_wrapper(gpointer data)
+{
+	gmr_target_free(data);
 }
 
 /**
@@ -68,10 +72,11 @@ int gmr_target_file_check(GmrTarget *this, const char *comparestr)
 */
 void gmr_target_parse_recipie(GmrTarget *this, const char *input)
 {
+	/**** FINDING FILES ****/
 	GMatchInfo *matchInfo;
 	
 	//only check for filenames, or something that looks like a filename
-	GRegex *regex=g_regex_new("[0-9a-zA-Z_/\\.\\-]*\\.[a-zA-Z]*(?=(\\ |\\(|\\)))",0,0,NULL);
+	GRegex *regex=g_regex_new("[0-9a-zA-Z_/\\.\\-]*\\.[a-zA-Z]{1,4}(?=(\\ |\\(|\\)))",0,0,NULL);
 
 	g_regex_match(regex, input, 0, &matchInfo);
 	
@@ -79,72 +84,140 @@ void gmr_target_parse_recipie(GmrTarget *this, const char *input)
 	{
 		gchar *word = g_match_info_fetch(matchInfo, 0);
 		
-		if(!gmr_target_file_check(this,word))
-		{
-			printf("added:: %s\n",word);
-			//add file to list, dont free it!
-			this->files=g_list_append(this->files,word);
+		gmr_file_add(word,input,this);
 		
-			size_t wordlen=strlen(word);
-		
-			//if c-file
-			if((g_str_has_suffix(word,".c") || g_str_has_suffix(word,".cpp")))
-			{
-				char exestring[100];
-				char path[1035];
-				FILE *fp;
-				
-				printf("found more...\n");
-				
-				char *completeidirsstr=gmr_get_include_strings(input);
-				
-				sprintf(exestring,"cd %s && cpp -M %s %s",this->parent->path,word,completeidirsstr);
-			
-				free(completeidirsstr);
-			
-				fp=shell_execute_from_buffer(exestring);
-
-				/* Read the output a line at a time - output it. */
-				while(fgets(path, sizeof(path), fp) != NULL)
-				{
-					gmr_target_parse_recipie(this,path);
-				}
-
-				/* close */
-				pclose(fp);
-			}
-		}
-		else
-		{
-			//printf("no match! %s\n",word);
-			g_free(word);
-		}
+		g_free(word);
 		
 		g_match_info_next(matchInfo, NULL);
 	}
 	
 	g_match_info_free(matchInfo);
 	g_regex_unref(regex);
+	
+	/**** FINDING OTHER ****/
+	/*
+		Tries to find information from a compiler such as gcc
+	*/
+	regex=g_regex_new("(?<=(-))[0-9a-zA-Z_/\\.\\-]+(?=(\\ |\\(|\\)))",0,0,NULL);
+
+	g_regex_match(regex, input, 0, &matchInfo);
+	
+	while(g_match_info_matches(matchInfo))
+	{
+		gchar *word = g_match_info_fetch(matchInfo, 0);
+		
+		GMR_DEBUG("found other :: %s\n",word);
+		
+		g_free(word);
+		
+		g_match_info_next(matchInfo, NULL);
+	}
+	
+	g_match_info_free(matchInfo);
+	g_regex_unref(regex);
+	
+	/**** TEST ****/
+	
+	//regex=g_regex_new("(((?!\\|\\|)(?!&&)(?!\\$\\())[^;\\)])+",0,0,NULL);
+	//check if it is a runnable file
+	regex=g_regex_new("^\\.{0,2}(\\/[0-9a-zA-Z_/.\\-]+)?\\/[0-9a-zA-Z_/\\-]+(.exe)?(?=(([\\ \\)\\(;&\\|><]|$)))",0,0,NULL);
+
+	g_regex_match(regex, input, 0, &matchInfo);
+	
+	while(g_match_info_matches(matchInfo))
+	{
+		gchar *word = g_match_info_fetch(matchInfo, 0);
+		
+		GMR_DEBUG("Found executable (maybe make run?) :: %s\n",word);
+		
+		this->runnable++;
+		
+		g_free(word);
+		
+		g_match_info_next(matchInfo, NULL);
+	}
+	
+	g_match_info_free(matchInfo);
+	g_regex_unref(regex);
+	
+	/**** SUB-MAKEFILE ****/
+
+/*	regex=g_regex_new("(?<=([mM][aA][kK][eE] .* -C ))[a-zA-Z0-9./]+",0,0,NULL);*/
+
+/*	g_regex_match(regex, input, 0, &matchInfo);*/
+/*	*/
+/*	while(g_match_info_matches(matchInfo))*/
+/*	{*/
+/*		gchar *word = g_match_info_fetch(matchInfo, 0);*/
+/*		*/
+/*		GMR_DEBUG("changing directory to ... :: %s\n",word);*/
+/*		*/
+/*		g_free(word);*/
+/*		*/
+/*		g_match_info_next(matchInfo, NULL);*/
+/*	}*/
+/*	*/
+/*	g_match_info_free(matchInfo);*/
+/*	g_regex_unref(regex);*/
 }
 
-void gmr_target_add_file(GmrTarget *this,const char *filename)
+/**
+	Check if file is in the list
+	
+	@param this
+		your target
+	@param file
+		a file to compare with
+*/
+GmrFile *gmr_target_check_file(GmrTarget *this, GmrFile *file)
 {
-	GmrMakefile *makefile=this->parent;
+	GList *l;
 	
+	for (l = this->files; l != NULL; l = l->next)
+  	{
+  		GmrFile *lFile=l->data;
+  		
+  		if(lFile==file)
+		{
+			return lFile;
+		}
+  	
+		if(strcmp(lFile->name,file->name)==0)
+		{
+			return lFile;
+		}
+	}
 	
+	return NULL;
 }
 
 /**
 	Dumps the contents from the target
+	
+	@param this
+		input GmrTarget to dump
 */
-void gmr_target_dump(GmrTarget *this)
+void gmr_target_dump(GmrTarget *this, int config)
 {
 	printf("t:\t%s\n",this->name);
 	
 	for (GList *l = this->files; l != NULL; l = l->next)
   	{
-  		char *filename=l->data;
-  	
-		printf("f:\t\t%s\n",filename);
+  		GmrFile *file=l->data;
+  		
+  		char *filename=file->name;
+  		
+  		if((!(config&GMR_DUMP_PRINT_DEPS)) || file->isDependency==0)
+			printf("f:\t\t%s\n",filename);
+		
+		if(config&GMR_DUMP_PRINT_DEPS)
+			for (GList *dep = file->deps; dep != NULL; dep = dep->next)
+	 	 	{
+	 	 		GmrFile *currdep=dep->data;
+	 	 		
+	 	 		char *depname=currdep->name;
+	  		
+				printf("d:\t\t\t%s\n",depname);
+	 	 	}
 	}
 }

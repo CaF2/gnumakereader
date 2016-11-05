@@ -10,15 +10,23 @@
 
 #pragma once
 
-#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <glib.h>
+#include <gio/gio.h>
 
+typedef struct GmrFile GmrFile;
+typedef struct GmrMakefile GmrMakefile;
+typedef struct GmrTarget GmrTarget;
+
+#include "gmr_file.h"
 #include "gmr_makefile.h"
 #include "gmr_target.h"
 #include "shell.h"
 #include "gmr_misc.h"
+
+#define GMR_DEBUG(...) if(GMR_VERBOSE) printf(__VA_ARGS__)
 
 #define GMR_FILE_N(filename_in,directory_in) memcpy(malloc(sizeof(GmrFile)),&(GmrFile){.filename=strdup(filename_in),.directory=strdup(directory_in)},sizeof(GmrFile))

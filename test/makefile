@@ -39,10 +39,10 @@ $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $< -c -o $@
 
 run: all
-	./$(NAME)
+	./$(NAME) ..
 	
 clean:
 	rm -f $(OBJS) $(NAME)
 
 memtest: all
-	$(MEMTEST) ./$(NAME)
+	$(MEMTEST) --track-origins=yes --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(NAME) 

@@ -9,14 +9,15 @@
 */
 
 /**
-	Main struct for handeling the makefile
+	Struct for handeling files
 */
-struct GmrMakefile
+struct GmrFile
 {
-	char *path; ///< path to this makefile
-	GList *targets; ///< a list with all targets (GmrTarget*)
+	char *name; ///< name of the file
+	char *source; ///< origin from where the string was extracted (eg gcc input.c -o output.o)
+	GList *deps; ///< dependancies, eg header files etc (GmrFile*)
+	GList *targets; ///< Targets containing this file (GmrTarget*)
 	
-	GList *files; ///< list of all files in the targets, of type (GmrFile*) <memory is shared with each targets, so free carefully>
+	uint8_t failedDepCheck : 1; ///< if it was possible to find the file in the first sweep
+	uint8_t isDependency : 1; ///< if it is a header file or something...
 };
-
-#define GMR_DUMP_PRINT_DEPS (1)

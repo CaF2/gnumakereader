@@ -9,6 +9,9 @@
 */
 #include "includes.h"
 
+//for debugging
+uint8_t GMR_VERBOSE=0;
+
 /**
 	Extract all the -I commands.
 	
@@ -33,12 +36,15 @@ char *gmr_get_include_strings(const char *command)
 		
 		g_string_append_printf(idirsstr,"%s ",word);
 		
-		printf("matchy:: %s\n",word);
+		GMR_DEBUG("matchy:: %s\n",word);
 		
 		g_free(word);
 		
 		g_match_info_next(matchInfo, NULL);
 	}
 	
-	return g_string_free(idirsstr,FALSE);
+	g_match_info_free(matchInfo);
+	g_regex_unref(regex);
+	
+	return g_string_free(idirsstr,!idirsstr->len);
 }

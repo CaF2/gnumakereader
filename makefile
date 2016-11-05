@@ -21,12 +21,14 @@ SRCS := $(wildcard ./src/*.c)
 BUILD_DIR := .build
 INC_DIR := inc
 
+PKG_CONF_LIBS := glib-2.0 gio-2.0
+
 CFLAGS := -g -Wall
-CFLAGS += $(shell pkg-config --cflags glib-2.0)
+CFLAGS += $(shell pkg-config --cflags $(PKG_CONF_LIBS))
 CFLAGS += -I./inc -I./inc/gen
 CFLAGS += -fPIC
 
-LDFLAGS := $(shell pkg-config --libs glib-2.0)
+LDFLAGS := $(shell pkg-config --libs $(PKG_CONF_LIBS))
 LDFLAGS += -shared
 
 INCLUDE_TEST := ./test
@@ -54,9 +56,6 @@ inc/gen/%.h: src/%.c incgen/%.gen.h
 	
 inc/gen/%.h: src/%.c
 	@$(call GENERATE_HEADER,$@,$(word 1,$^),)
-		
-test:
-	echo $(wildcard incgen/shell.gen.h) $(wildcard src/shell.c)
 
 clean:
 	rm -f $(OBJS) $(OUTPUT) $(HEADERS)
@@ -70,5 +69,5 @@ $(INCLUDE_TEST_BIN): $(OUTPUT) $(HEADERS)
 run: $(INCLUDE_TEST_BIN)
 	$(MAKE) -C $(INCLUDE_TEST) run
 	
-valgrind: all
-	valgrind  --track-origins=yes --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(OUTPUT)
+memtest: all
+	$(MAKE) -C $(INCLUDE_TEST) memtest
