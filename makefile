@@ -37,8 +37,21 @@ INCLUDE_TEST_BIN := $(INCLUDE_TEST)/gmrtest
 OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(SRCS:.c=.o)))
 HEADERS := $(addprefix $(INC_DIR)/gen/,$(notdir $(SRCS:.c=.h)))
 
-GENERATE_HEADER = dummy="$$(./string_to_var.sh $1)"; echo -e \
-		"//This file was generated! Dont touch!\n\#pragma once\n\n\#ifndef $$dummy\n\#define $$dummy$(if $3,\n\n$$(cat $3),)\n\n$$(makeheaders -h $2)" | sed -n '/\#define INTERFACE 0/q;p' > $1;echo -e "\n\#endif" >> $1; echo "generating $1 ..."
+## Function for generating header files from a C-file (better functionality than the original makeheaders)
+## -Dont override if the file is the same
+## @param $1
+## 	c/c++ file to read the data from
+## @param $2
+## 	optional gen.h file, or filecontents to insert
+GENERATE_HEADER = $(shell dummy="$$(./string_to_var.sh $1)"; \
+	output="$$(echo -e "//This file was generated! Dont touch!\n\#pragma once\n\n\#ifndef $$dummy\n\#define $$dummy$(if $3,\n\n$$(cat $3),)\n\n$$(makeheaders -h $2)" | sed -n '/\#define INTERFACE 0/q;p';echo -e "\n\#endif")";\
+	if ! test -f $1 || ! test "$$(cat $1)" = "$$output";\
+	then\
+		echo "$$output" > $1;\
+		echo "echo \"generating $1 ...\"";\
+	fi;)
+
+########### TARGETS ETC ###########
 
 all: $(OUTPUT)
 	
