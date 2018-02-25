@@ -22,7 +22,7 @@ uint8_t GMR_VERBOSE=0;
 */
 char *gmr_get_include_strings(const char *command)
 {
-	GMatchInfo *matchInfo;
+	g_autoptr(GMatchInfo) matchInfo=NULL;
 				
 	g_autoptr(GString) idirsstr=g_string_sized_new(100);
 

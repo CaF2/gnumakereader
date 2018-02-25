@@ -42,6 +42,8 @@ void gmr_makefile_finalize(GmrMakefile *self)
 	g_list_free_full(self->files,gmr_file_free_wrapper);
 
 	g_list_free_full(self->targets,gmr_target_free_wrapper);
+	
+	g_string_free(self->current_directory,TRUE);
 }
 
 /**

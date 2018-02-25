@@ -15,6 +15,8 @@ NAME = gmrtest
 
 FOLDER = .
 
+PARAMS = -p.. -v
+
 ######
 
 SRCS = $(wildcard $(FOLDER)/*.c)
@@ -39,13 +41,13 @@ $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $< -c -o $@
 
 run: all
-	./$(NAME) ..
+	./$(NAME) $(PARAMS)
 	
 clean:
 	rm -f $(OBJS) $(NAME)
 
 valgrind: all
-	$(MEMTEST) --track-origins=yes --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(NAME) 
+	$(MEMTEST) --track-origins=yes --tool=memcheck --leak-check=full --show-leak-kinds=all --suppressions=/home/caf2/dev/helpers/gtk.suppression ./$(NAME) $(PARAMS)
 	
 gdb: all
-	gdb ./$(NAME) 
+	gdb ./$(NAME) $(PARAMS)
