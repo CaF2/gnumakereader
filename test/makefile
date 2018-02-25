@@ -44,5 +44,8 @@ run: all
 clean:
 	rm -f $(OBJS) $(NAME)
 
-memtest: all
+valgrind: all
 	$(MEMTEST) --track-origins=yes --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(NAME) 
+	
+gdb: all
+	gdb ./$(NAME) 

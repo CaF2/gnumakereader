@@ -21,7 +21,7 @@ int main(int argc,char *argv[])
 	
 	printf("RUNNING FROM PATH: %s\n",EXE_PATH);
 	
-	GMR_VERBOSE=0;
+	GMR_VERBOSE=1;
 	
 	gmr_makefile_init(&makefileTest,EXE_PATH);
 	

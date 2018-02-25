@@ -14,6 +14,8 @@
 struct GmrMakefile
 {
 	char *path; ///< path to this makefile
+	GString *current_directory;
+
 	GList *targets; ///< a list with all targets (GmrTarget*)
 	
 	GList *files; ///< list of all files in the targets, of type (GmrFile*) <memory is shared with each targets, so free carefully>

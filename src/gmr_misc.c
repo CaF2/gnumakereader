@@ -24,27 +24,22 @@ char *gmr_get_include_strings(const char *command)
 {
 	GMatchInfo *matchInfo;
 				
-	GString *idirsstr=g_string_sized_new(100);
+	g_autoptr(GString) idirsstr=g_string_sized_new(100);
 
-	GRegex *regex=g_regex_new("-I[^\\ ]*",0,0,NULL);
+	g_autoptr(GRegex) regex=g_regex_new("-I[^\\ ]*",0,0,NULL);
 
 	g_regex_match (regex, command, 0, &matchInfo);
 
 	while(g_match_info_matches(matchInfo))
 	{
-		gchar *word = g_match_info_fetch(matchInfo, 0);
+		g_autofree gchar *word = g_match_info_fetch(matchInfo, 0);
 		
 		g_string_append_printf(idirsstr,"%s ",word);
 		
 		GMR_DEBUG("matchy:: %s\n",word);
 		
-		g_free(word);
-		
 		g_match_info_next(matchInfo, NULL);
 	}
 	
-	g_match_info_free(matchInfo);
-	g_regex_unref(regex);
-	
-	return g_string_free(idirsstr,!idirsstr->len);
+	return g_string_free(g_steal_pointer(&idirsstr),FALSE);
 }

@@ -62,12 +62,15 @@ $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
 
 $(BUILD_DIR)/%.o: src/%.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MT $@ -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
 
-inc/gen/%.h: src/%.c incgen/%.gen.h
+inc/gen:
+	mkdir $@
+
+inc/gen/%.h: src/%.c incgen/%.gen.h | inc/gen 
 	@$(call GENERATE_HEADER,$@,$(word 1,$^),$(word 2,$^))
 	
-inc/gen/%.h: src/%.c
+inc/gen/%.h: src/%.c | inc/gen
 	@$(call GENERATE_HEADER,$@,$(word 1,$^),)
 
 clean:
@@ -80,7 +83,13 @@ $(INCLUDE_TEST_BIN): $(OUTPUT) $(HEADERS)
 	$(MAKE) -C $(INCLUDE_TEST) 
 
 run: $(INCLUDE_TEST_BIN)
-	$(MAKE) -C $(INCLUDE_TEST) run
+	$(MAKE) -C $(INCLUDE_TEST) $@
 	
-memtest: all
-	$(MAKE) -C $(INCLUDE_TEST) memtest
+valgrind: all
+	$(MAKE) -C $(INCLUDE_TEST) $@
+
+gdb: all
+	$(MAKE) -C $(INCLUDE_TEST) $@
+
+-include $(OBJS:.o=.d)
+

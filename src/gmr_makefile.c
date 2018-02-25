@@ -1,64 +1,65 @@
 /**
 	Copyright (c) 2016 Florian Evaldsson
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+	Permission is hereby granted, free of charge, to any person obtaining a copy of self software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-	The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+	The above copyright notice and self permission notice shall be included in all copies or substantial portions of the Software.
 
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "includes.h"
 
 /**
-	This is probably the only real function you will use, it will initialize everything :)
+	self is probably the only real function you will use, it will initialize everything :)
 	
-	@param this
+	@param self
 		current makefile
 */
-GmrMakefile *gmr_makefile_init(GmrMakefile *this,const char *path)
+GmrMakefile *gmr_makefile_init(GmrMakefile *self,const char *path)
 {
-	this->path=g_strdup(path);
-	this->files=NULL;
+	self->path=g_strdup(path);
+	self->files=NULL;
+	self->current_directory=g_string_sized_new(100);
 	
-	gmr_makefile_init_targets(this);
+	gmr_makefile_init_targets(self);
 	
-	if(this->targets)
-		gmr_makefile_evaluate_targets(this);
+	if(self->targets)
+		gmr_makefile_evaluate_targets(self);
 	
-	return this;
+	return self;
 }
 
 /**
-	Run this at the end, when you want to "finish the object"
+	Run self at the end, when you want to "finish the object"
 	
-	@param this
+	@param self
 		current makefile structure
 */
-void gmr_makefile_finalize(GmrMakefile *this)
+void gmr_makefile_finalize(GmrMakefile *self)
 {
-	free(this->path);
+	free(self->path);
 	
-	g_list_free_full(this->files,gmr_file_free_wrapper);
+	g_list_free_full(self->files,gmr_file_free_wrapper);
 
-	g_list_free_full(this->targets,gmr_target_free_wrapper);
+	g_list_free_full(self->targets,gmr_target_free_wrapper);
 }
 
 /**
 	Evaluate the targets, eg its recipies, makes a couple of dry runs, and extracts what it can from there.
 	
-	@param this
+	@param self
 		current makefile structure
 */
-void gmr_makefile_evaluate_targets(GmrMakefile *this)
+void gmr_makefile_evaluate_targets(GmrMakefile *self)
 {
-	GList *list=this->targets;
+	GList *list=self->targets;
 
 	for (GList *l = list; l != NULL; l = l->next)
   	{
 		GmrTarget *target = l->data;
 
 		const char *targetName=target->name;
-		const char *exepath=this->path;
+		const char *exepath=self->path;
 
 		GMR_DEBUG("======== Running target: %s ========\n",targetName);
 		
@@ -77,7 +78,7 @@ void gmr_makefile_evaluate_targets(GmrMakefile *this)
 			make -n -B | grep -oh '[0-9a-zA-Z_/\.]*\.\(c\|cpp\)'
 		*/
 	
-		sprintf(exestring,"cd %s && make %s -n -B",exepath,targetName);
+		sprintf(exestring,"LANG=c; make -C %s -n -B %s",exepath,targetName);
 		//sprintf(exestring,"cd %s && make %s -n -B | grep -oh '[0-9a-zA-Z_/\\.]*\\.\\(c\\|o\\|cpp\\)'",exepath,targetName);
 		
 		GMR_DEBUG("RUNNING TARGET: %s -> %s\n",targetName,exestring);
@@ -99,12 +100,12 @@ void gmr_makefile_evaluate_targets(GmrMakefile *this)
 /**
 	Extracts the recepies from the makefile, and inserts them into the structure. 
 	
-	@param this
+	@param self
 		input gmrmakefile
 */
-void gmr_makefile_init_targets(GmrMakefile *this)
+void gmr_makefile_init_targets(GmrMakefile *self)
 {
-	const char *path=this->path;
+	const char *path=self->path;
 	GList *retTargets=NULL;
 
 	FILE *fp;
@@ -137,7 +138,7 @@ void gmr_makefile_init_targets(GmrMakefile *this)
 				
 				GMR_DEBUG("Target found: [%s]\n", word);
 				
-				GmrTarget *newtarget=gmr_target_init(malloc(sizeof(GmrTarget)),word,this);
+				GmrTarget *newtarget=gmr_target_new(word,self);
 				
 				if(strcmp(word,"run")==0 || strcmp(word,"test")==0)
 					newtarget->runnable=2;
@@ -159,22 +160,22 @@ void gmr_makefile_init_targets(GmrMakefile *this)
 	
 	pclose(fp);
 	
-	this->targets=retTargets;
+	self->targets=retTargets;
 }
 
 /**
 	Check if file is in the list
 	
-	@param this
+	@param self
 		your makefile
 	@param file
 		a file to compare with
 */
-GmrFile *gmr_makefile_check_file(GmrMakefile *this, GmrFile *file)
+GmrFile *gmr_makefile_check_file(GmrMakefile *self, GmrFile *file)
 {
 	GList *l;
 	
-	for (l = this->files; l != NULL; l = l->next)
+	for (l = self->files; l != NULL; l = l->next)
   	{
   		GmrFile *lFile=l->data;
   		
@@ -195,15 +196,15 @@ GmrFile *gmr_makefile_check_file(GmrMakefile *this, GmrFile *file)
 /**
 	Dumps the contents from the makefile
 	
-	@param this
+	@param self
 		the makefile to dump
 */
-void gmr_makefile_dump(GmrMakefile *this,int config)
+void gmr_makefile_dump(GmrMakefile *self,int config)
 {
 	printf("=== DUMPING INFORMATION ===\n");
-	printf("-path = '%s'\n\n",this->path);
+	printf("-path = '%s'\n\n",self->path);
 	
-	GList *list=this->targets;
+	GList *list=self->targets;
 
 	for (GList *l = list; l != NULL; l = l->next)
   	{
