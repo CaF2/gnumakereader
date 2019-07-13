@@ -19,3 +19,12 @@ make -j
 ```shell
 make run -j
 ```
+
+## Tips
+
+to make a tags file with gmr, do something like:
+
+```shell
+gmr -f -tall |& grep -Po '.*\.[ch]' | grep -v main.c | etags -
+```
+
