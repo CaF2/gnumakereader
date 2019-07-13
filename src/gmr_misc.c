@@ -26,7 +26,7 @@ char *gmr_get_include_strings(const char *command)
 				
 	g_autoptr(GString) idirsstr=g_string_sized_new(100);
 
-	g_autoptr(GRegex) regex=g_regex_new("-I[^\\ ]*",0,0,NULL);
+	g_autoptr(GRegex) regex=g_regex_new("-I[^\\ \\t]*",0,0,NULL);
 
 	g_regex_match (regex, command, 0, &matchInfo);
 

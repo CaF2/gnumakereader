@@ -1,6 +1,6 @@
 *.so
 .build/
 test/*.o
-test/gmrtest
+test/gmr
 info
 inc/gen/

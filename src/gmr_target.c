@@ -246,10 +246,12 @@ GmrFile *gmr_target_check_file(GmrTarget *self, GmrFile *file)
 */
 void gmr_target_dump(GmrTarget *self, int config)
 {
-	printf("t:\t%s\n",self->name);
-	printf("flag:\trunnable=%d\n",self->runnable);
-	printf("flag:\tdebug=%d\n",self->debug);
-
+	if(config==DUMP_ALL)
+	{
+		printf("t:\t%s\n",self->name);
+		printf("flag:\trunnable=%d\n",self->runnable);
+		printf("flag:\tdebug=%d\n",self->debug);
+	}
 
 	for (GList *l = self->files; l != NULL; l = l->next)
   	{
@@ -258,9 +260,19 @@ void gmr_target_dump(GmrTarget *self, int config)
   		char *filename=file->name;
   		
   		if((!(config&GMR_DUMP_PRINT_DEPS)) || file->isDependency==0)
-			printf("f:\t\t%s\n",filename);
+  		{
+  			if(!(config&DUMP_GTAGS))
+  			{
+				printf("f:\t\t%s\n",filename);
+			}
+			else
+			{
+				printf("%s\n",filename);
+			}
+		}
 		
 		if(config&GMR_DUMP_PRINT_DEPS)
+		{
 			for (GList *dep = file->deps; dep != NULL; dep = dep->next)
 	 	 	{
 	 	 		GmrFile *currdep=dep->data;
@@ -269,5 +281,6 @@ void gmr_target_dump(GmrTarget *self, int config)
 	  		
 				printf("d:\t\t\t%s\n",depname);
 	 	 	}
+	 	 }
 	}
 }

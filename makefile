@@ -25,7 +25,7 @@ PKG_CONF_LIBS := glib-2.0 gio-2.0
 
 CFLAGS := -g -Wall
 CFLAGS += $(shell pkg-config --cflags $(PKG_CONF_LIBS))
-CFLAGS += -I./inc -I./inc/gen
+CFLAGS += -I./inc -I./inc/gen -D_GNU_SOURCE
 CFLAGS += -fPIC
 
 LDFLAGS := $(shell pkg-config --libs $(PKG_CONF_LIBS))
@@ -58,14 +58,11 @@ all: $(OUTPUT)
 $(OUTPUT): $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o $@ $^
 
-$(BUILD_DIR):
-	mkdir $(BUILD_DIR)
-
 $(BUILD_DIR)/%.o: src/%.c $(HEADERS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -MT $@ -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
 
-inc/gen:
-	mkdir $@
+inc/gen $(BUILD_DIR):
+	mkdir -p $@
 
 inc/gen/%.h: src/%.c incgen/%.gen.h | inc/gen 
 	@$(call GENERATE_HEADER,$@,$(word 1,$^),$(word 2,$^))

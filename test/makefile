@@ -11,7 +11,9 @@
 CC = gcc
 MEMTEST = valgrind
 
-NAME = gmrtest
+NAME = gmr
+
+INSTALL_DIR ?= /usr/bin
 
 FOLDER = .
 
@@ -51,3 +53,9 @@ valgrind: all
 	
 gdb: all
 	gdb ./$(NAME) $(PARAMS)
+
+$(INSTALL_DIR)/$(NAME):
+	cp $(NAME) $@
+	
+install: $(INSTALL_DIR)/$(NAME)
+

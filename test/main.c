@@ -11,9 +11,21 @@
 
 #include "includes.h"
 
+void print_help(void)
+{
+	printf("GNU-Make reader printing tool\n");
+	printf("%-3s %-20s %s\n","-h","--help","Print this text");
+	printf("%-3s %-20s %s\n","-p","--path","Specify the path to the makefile");
+	printf("%-3s %-20s %s\n","-v","--verbose","Print more information");
+	printf("%-3s %-20s %s\n","-g","--gtags","Dump the content in a gtags format");
+	printf("%-3s %-20s %s\n","-t","--target","Dump only the specified target");
+}
+
 int main(int argc,char *argv[])
 {
 	char *EXE_PATH=".";
+	char *dump_target=NULL;
+	int dump_option=DUMP_ALL;
 
 	while (1)
 	{
@@ -23,14 +35,17 @@ int main(int argc,char *argv[])
 			{"verbose", no_argument, 0, 'v'},
 			/* These options don’t set a flag.
 			We distinguish them by their indices. */
-			{"help",     no_argument, 0, 'h'},
-			{"path",  required_argument, 0, 'p'},
+			{"help", no_argument, 0, 'h'},
+			{"verbose", no_argument, 0, 'v'},
+			{"gtags", no_argument, 0, 'g'},
+			{"target", no_argument, 0, 't'},
+			{"path", required_argument, 0, 'p'},
 			{0, 0, 0, 0}
 		};
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long (argc, argv, "hvp:",long_options, &option_index);
+		int c = getopt_long (argc, argv, "hvp:gt:",long_options, &option_index);
 
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -49,16 +64,24 @@ int main(int argc,char *argv[])
 			break;
 
 			case 'h':
-				puts ("option -a\n");
-			break;
+				print_help();
+			return 0;
 			
 			case 'v':
 				GMR_VERBOSE=1;
 			break;
 			
 			case 'p':
-				printf ("Vill parse the makefile at the directory:: `%s`\n", optarg);
+/*				printf ("Vill parse the makefile at the directory:: `%s`\n", optarg);*/
 				EXE_PATH=optarg;
+			break;
+			
+			case 't':
+				dump_target=optarg;
+			break;
+			
+			case 'g':
+				dump_option=DUMP_GTAGS;
 			break;
 
 			case '?':
@@ -79,13 +102,15 @@ int main(int argc,char *argv[])
 		putchar ('\n');
 	}
 	
+	/////////////////////
+
 	GmrMakefile makefileTest;
 	
 	printf("RUNNING FROM PATH: %s\n",EXE_PATH);
 	
 	gmr_makefile_init(&makefileTest,EXE_PATH);
 	
-	gmr_makefile_dump(&makefileTest,0);
+	gmr_makefile_dump(&makefileTest,dump_target,dump_option);
 	
 	gmr_makefile_finalize(&makefileTest);
 

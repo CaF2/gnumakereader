@@ -179,13 +179,13 @@ GmrFile *gmr_makefile_check_file(GmrMakefile *self, GmrFile *file)
 	
 	for (l = self->files; l != NULL; l = l->next)
   	{
-  		GmrFile *lFile=l->data;
-  		
-  		if(lFile==file)
+		GmrFile *lFile=l->data;
+
+		if(lFile==file)
 		{
 			return lFile;
 		}
-  	
+
 		if(strcmp(lFile->name,file->name)==0)
 		{
 			return lFile;
@@ -200,16 +200,26 @@ GmrFile *gmr_makefile_check_file(GmrMakefile *self, GmrFile *file)
 	
 	@param self
 		the makefile to dump
+	@param target_name
+		NULL if all, or specify a target name
 */
-void gmr_makefile_dump(GmrMakefile *self,int config)
+void gmr_makefile_dump(GmrMakefile *self, const char *target_name, int config)
 {
-	printf("=== DUMPING INFORMATION ===\n");
-	printf("-path = '%s'\n\n",self->path);
+	if(config==DUMP_ALL)
+	{
+		printf("=== DUMPING INFORMATION ===\n");
+		printf("-path = '%s'\n\n",self->path);
+	}
 	
 	GList *list=self->targets;
 
 	for (GList *l = list; l != NULL; l = l->next)
-  	{
-		gmr_target_dump(l->data,config);
+	{
+		GmrTarget *target=l->data;
+
+		if(target_name==NULL || (target && target->name && strcmp(target->name,target_name)==0))
+		{
+			gmr_target_dump(l->data,config);
+		}
 	}
 }
