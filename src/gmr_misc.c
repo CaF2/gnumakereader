@@ -10,7 +10,17 @@
 #include "includes.h"
 
 //for debugging
-uint8_t GMR_VERBOSE=0;
+static uint8_t GMR_VERBOSE_V=0;
+
+void gmr_verbose_set(uint8_t value)
+{
+	GMR_VERBOSE_V=value;
+}
+
+uint8_t gmr_verbose_get(void)
+{
+	return GMR_VERBOSE_V;
+}
 
 /**
 	Extract all the -I commands.

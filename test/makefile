@@ -25,19 +25,18 @@ SRCS = $(wildcard $(FOLDER)/*.c)
 
 OBJS = $(SRCS:.c=.o)
 
-CFLAGS = -g -std=c11
+CFLAGS = -g -std=c11 -D_GNU_SOURCE
 CFLAGS += -I./../inc -I./../inc/gen
 CFLAGS += $(shell pkg-config --cflags glib-2.0)
 
-LDFLAGS = ../libgnumakereader.0.1.so
-LDFLAGS += $(shell pkg-config --libs glib-2.0)
+LDFLAGS = $(shell pkg-config --libs glib-2.0)
 
 ######
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $@
+	$(CC) $(LDFLAGS) $(OBJS) ../libgnumakereader.a -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@

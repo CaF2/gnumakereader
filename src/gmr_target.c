@@ -261,7 +261,7 @@ void gmr_target_dump(GmrTarget *self, int config)
   		
   		if((!(config&GMR_DUMP_PRINT_DEPS)) || file->isDependency==0)
   		{
-  			if(!(config&DUMP_GTAGS))
+  			if(!(config&DUMP_FILES))
   			{
 				printf("f:\t\t%s\n",filename);
 			}

@@ -24,4 +24,4 @@ struct GmrMakefile
 #define GMR_DUMP_PRINT_DEPS (1)
 
 #define DUMP_ALL 0
-#define DUMP_GTAGS 2
+#define DUMP_FILES 2

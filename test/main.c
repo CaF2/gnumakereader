@@ -17,7 +17,7 @@ void print_help(void)
 	printf("%-3s %-20s %s\n","-h","--help","Print this text");
 	printf("%-3s %-20s %s\n","-p","--path","Specify the path to the makefile");
 	printf("%-3s %-20s %s\n","-v","--verbose","Print more information");
-	printf("%-3s %-20s %s\n","-g","--gtags","Dump the content in a gtags format");
+	printf("%-3s %-20s %s\n","-f","--fdump","Dump the file contents only");
 	printf("%-3s %-20s %s\n","-t","--target","Dump only the specified target");
 }
 
@@ -37,7 +37,7 @@ int main(int argc,char *argv[])
 			We distinguish them by their indices. */
 			{"help", no_argument, 0, 'h'},
 			{"verbose", no_argument, 0, 'v'},
-			{"gtags", no_argument, 0, 'g'},
+			{"fdump", no_argument, 0, 'f'},
 			{"target", no_argument, 0, 't'},
 			{"path", required_argument, 0, 'p'},
 			{0, 0, 0, 0}
@@ -45,7 +45,7 @@ int main(int argc,char *argv[])
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		int c = getopt_long (argc, argv, "hvp:gt:",long_options, &option_index);
+		int c = getopt_long (argc, argv, "hvp:ft:",long_options, &option_index);
 
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -68,7 +68,7 @@ int main(int argc,char *argv[])
 			return 0;
 			
 			case 'v':
-				GMR_VERBOSE=1;
+				gmr_verbose_set(1);
 			break;
 			
 			case 'p':
@@ -80,8 +80,8 @@ int main(int argc,char *argv[])
 				dump_target=optarg;
 			break;
 			
-			case 'g':
-				dump_option=DUMP_GTAGS;
+			case 'f':
+				dump_option=DUMP_FILES;
 			break;
 
 			case '?':

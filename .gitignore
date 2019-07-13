@@ -4,3 +4,5 @@ test/*.o
 test/gmr
 info
 inc/gen/
+*.so*
+*.a

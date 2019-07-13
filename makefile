@@ -12,6 +12,10 @@ NAME := gnumakereader
 
 VERSION := 0.1
 
+###################################
+#	GENERAL STUFF
+###################################
+
 OUTPUT := lib$(NAME).$(VERSION).so
 
 CC := gcc
@@ -26,7 +30,6 @@ PKG_CONF_LIBS := glib-2.0 gio-2.0
 CFLAGS := -g -Wall
 CFLAGS += $(shell pkg-config --cflags $(PKG_CONF_LIBS))
 CFLAGS += -I./inc -I./inc/gen -D_GNU_SOURCE
-CFLAGS += -fPIC
 
 LDFLAGS := $(shell pkg-config --libs $(PKG_CONF_LIBS))
 LDFLAGS += -shared
@@ -34,8 +37,17 @@ LDFLAGS += -shared
 INCLUDE_TEST := ./test
 INCLUDE_TEST_BIN := $(INCLUDE_TEST)/gmrtest
 
+###################################
+#	DECLARING OBJECTS AND SUCH
+###################################
+
 OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(SRCS:.c=.o)))
 HEADERS := $(addprefix $(INC_DIR)/gen/,$(notdir $(SRCS:.c=.h)))
+
+SHARED_LIBNAME=lib$(NAME).so.$(VERSION)
+STATIC_LIBNAME=lib$(NAME).a
+
+SONAME = lib$(NAME).so.$(word 1,$(subst ., ,$(VERSION)))
 
 ## Function for generating header files from a C-file (better functionality than the original makeheaders)
 ## -Dont override if the file is the same
@@ -51,12 +63,17 @@ GENERATE_HEADER = $(shell dummy="$$(./string_to_var.sh $1)"; \
 		echo "echo \"generating $1 ...\"";\
 	fi;)
 
-########### TARGETS ETC ###########
+###################################
+#	ALL BUILD OPTIONS
+###################################
 
-all: $(OUTPUT)
-	
-$(OUTPUT): $(OBJS)
-	$(CC) $(LDFLAGS) -shared -o $@ $^
+all: $(SHARED_LIBNAME) $(STATIC_LIBNAME)
+
+$(SHARED_LIBNAME): $(OBJS) 
+	$(CC) $(LDFLAGS) -shared -Wl,-soname,$(SONAME) -o $@ $^
+
+$(STATIC_LIBNAME): $(OBJS) 
+	ar rcs $@ $^
 
 $(BUILD_DIR)/%.o: src/%.c $(HEADERS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -MT $@ -MMD -MF $(BUILD_DIR)/$*.d -c $< -o $@
