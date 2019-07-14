@@ -156,7 +156,20 @@ void gmr_file_add_header_dependency(GmrFile *self, GmrTarget *target, const char
 */
 GmrFile *gmr_file_add(const char *filename, const char *source, GmrTarget *target)
 {
-	GmrFile check={.name=(char*)filename};
+	g_autofree char *actual_filename;
+	
+	if(target->parent->current_directory->len>0)
+	{
+		asprintf(&actual_filename,"%s/%s",target->parent->current_directory->str,filename);
+	}
+	else
+	{
+		actual_filename=g_strdup(filename);
+	}
+	
+	GMR_DEBUG("actual filepath :: %s\n",actual_filename);
+
+	GmrFile check={.name=(char*)actual_filename};
 
 	GmrMakefile *makefile=target->parent;
 
@@ -164,9 +177,9 @@ GmrFile *gmr_file_add(const char *filename, const char *source, GmrTarget *targe
 	
 	if(!qfoundfile)
 	{
-		GMR_DEBUG("added :: %s\n",filename);
+		GMR_DEBUG("added :: %s\n",actual_filename);
 
-		GmrFile *self=gmr_file_init(malloc(sizeof(GmrFile)),filename,source,target);
+		GmrFile *self=gmr_file_init(malloc(sizeof(GmrFile)),actual_filename,source,target);
 	
 		makefile->files=g_list_append(makefile->files,self);
 		
@@ -190,19 +203,19 @@ GmrFile *gmr_file_add(const char *filename, const char *source, GmrTarget *targe
 	}
 	else
 	{
-		GMR_DEBUG("skipping :: %s\n",filename);
+		GMR_DEBUG("skipping :: %s\n",actual_filename);
 	}
 	
 	//previous dependency check failed, lets retry (could not find on a target like 'echo "compiling ... hello.c"') --> waiting for like gcc -I./something hello.c
 	if(qfoundfile && qfoundfile->failedDepCheck)
 	{
-		GMR_DEBUG("Retry dep check on %s ...\n",filename);
+		GMR_DEBUG("Retry dep check on %s ...\n",actual_filename);
 	
 		qfoundfile->failedDepCheck=0;
 		free(qfoundfile->source);
 		
 		qfoundfile->source=g_strdup(source);
-		gmr_file_check_for_dependency(qfoundfile,filename,source,target);
+		gmr_file_check_for_dependency(qfoundfile,actual_filename,source,target);
 	}
 	
 	return qfoundfile;
