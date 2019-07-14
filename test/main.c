@@ -108,7 +108,7 @@ int main(int argc,char *argv[])
 	
 	printf("RUNNING FROM PATH: %s\n",EXE_PATH);
 	
-	gmr_makefile_init(&makefileTest,EXE_PATH);
+	gmr_makefile_init(&makefileTest,EXE_PATH,dump_target);
 	
 	gmr_makefile_dump(&makefileTest,dump_target,dump_option);
 	

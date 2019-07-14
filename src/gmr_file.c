@@ -72,7 +72,9 @@ void gmr_file_check_for_dependency(GmrFile *self,const char *filename,const char
 			asprintf(&exestring,"cd %s && cpp -M %s %s",target->parent->path,filename,completeidirsstr);
 		}
 		else
+		{
 			asprintf(&exestring,"LANG=c; cd %s && cpp -M %s 2>&1",target->parent->path,filename);
+		}
 		
 		GMR_DEBUG("exestr:: %s\n",exestring);
 				

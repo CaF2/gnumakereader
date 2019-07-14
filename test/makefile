@@ -23,6 +23,8 @@ PARAMS = -p.. -v
 
 SRCS = $(wildcard $(FOLDER)/*.c)
 
+EXTERNAL_OBJS = ../libgnumakereader.a
+
 OBJS = $(SRCS:.c=.o)
 
 CFLAGS = -g -std=c11 -D_GNU_SOURCE
@@ -31,12 +33,18 @@ CFLAGS += $(shell pkg-config --cflags glib-2.0)
 
 LDFLAGS = $(shell pkg-config --libs glib-2.0)
 
+CFLAGS += $(if $(ASAN),-fsanitize=address)
+LDFLAGS += $(if $(ASAN),-fsanitize=address)
+
 ######
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) ../libgnumakereader.a -o $@
+$(EXTERNAL_OBJS):
+	make -C$(dir $@)
+
+$(NAME): $(OBJS) $(EXTERNAL_OBJS)
+	$(CC) $(LDFLAGS) $^ -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@
@@ -53,8 +61,8 @@ valgrind: all
 gdb: all
 	gdb ./$(NAME) $(PARAMS)
 
-$(INSTALL_DIR)/$(NAME):
-	cp $(NAME) $@
+$(INSTALL_DIR)/$(NAME): $(NAME)
+	cp -f $(NAME) $@
 	
 install: $(INSTALL_DIR)/$(NAME)
 

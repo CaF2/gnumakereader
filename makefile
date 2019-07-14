@@ -34,6 +34,9 @@ CFLAGS += -I./inc -I./inc/gen -D_GNU_SOURCE
 LDFLAGS := $(shell pkg-config --libs $(PKG_CONF_LIBS))
 LDFLAGS += -shared
 
+CFLAGS += $(if $(ASAN),-fsanitize=address)
+LDFLAGS += $(if $(ASAN),-fsanitize=address)
+
 INCLUDE_TEST := ./test
 INCLUDE_TEST_BIN := $(INCLUDE_TEST)/gmrtest
 

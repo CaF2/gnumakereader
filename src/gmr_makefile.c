@@ -14,8 +14,12 @@
 	
 	@param self
 		current makefile
+	@param path
+		a path to the makefile
+	@param use_target
+		NULL if all, or specify a target
 */
-GmrMakefile *gmr_makefile_init(GmrMakefile *self,const char *path)
+GmrMakefile *gmr_makefile_init(GmrMakefile *self,const char *path, const char *use_target)
 {
 	self->path=g_strdup(path);
 	self->files=NULL;
@@ -24,7 +28,7 @@ GmrMakefile *gmr_makefile_init(GmrMakefile *self,const char *path)
 	gmr_makefile_init_targets(self);
 	
 	if(self->targets)
-		gmr_makefile_evaluate_targets(self);
+		gmr_makefile_evaluate_targets(self,use_target);
 	
 	return self;
 }
@@ -52,7 +56,7 @@ void gmr_makefile_finalize(GmrMakefile *self)
 	@param self
 		current makefile structure
 */
-void gmr_makefile_evaluate_targets(GmrMakefile *self)
+void gmr_makefile_evaluate_targets(GmrMakefile *self, const char *use_target)
 {
 	GList *list=self->targets;
 
@@ -61,41 +65,44 @@ void gmr_makefile_evaluate_targets(GmrMakefile *self)
 		GmrTarget *target = l->data;
 
 		const char *targetName=target->name;
-		const char *exepath=self->path;
-
-		GMR_DEBUG("======== Running target: %s ========\n",targetName);
 		
-		FILE *fp;
-		char path[1035];
-	
-		char exestring[100];
-	
-		/*
-			#*.h-filer
-			make -n -B | grep -oh '\-I[0-9a-zA-Z_/\.]*\ '
-						
-			#includeträd?
-
-			#*.c-filer
-			make -n -B | grep -oh '[0-9a-zA-Z_/\.]*\.\(c\|cpp\)'
-		*/
-	
-		sprintf(exestring,"LANG=c; make -C %s -n -B %s",exepath,targetName);
-		//sprintf(exestring,"cd %s && make %s -n -B | grep -oh '[0-9a-zA-Z_/\\.]*\\.\\(c\\|o\\|cpp\\)'",exepath,targetName);
-		
-		GMR_DEBUG("RUNNING TARGET: %s -> %s\n",targetName,exestring);
-		
-		fp=shell_execute_from_buffer(exestring);
-
-		//Read the output a line at a time - output it.
-		while(fgets(path, sizeof(path), fp) != NULL)
+		if(use_target==NULL || (use_target && targetName && strcmp(use_target,targetName)==0))
 		{
-			GMR_DEBUG("got recepie: %s\n",path);
-			gmr_target_parse_recipie(target,path);
-		}
+			const char *exepath=self->path;
 
-		pclose(fp);
+			GMR_DEBUG("======== Running target: %s ========\n",targetName);
+			
+			FILE *fp;
+			char path[1035];
 		
+			char exestring[100];
+		
+			/*
+				#*.h-filer
+				make -n -B | grep -oh '\-I[0-9a-zA-Z_/\.]*\ '
+							
+				#includeträd?
+
+				#*.c-filer
+				make -n -B | grep -oh '[0-9a-zA-Z_/\.]*\.\(c\|cpp\)'
+			*/
+		
+			sprintf(exestring,"LANG=c; make -C %s -n -B %s",exepath,targetName);
+			//sprintf(exestring,"cd %s && make %s -n -B | grep -oh '[0-9a-zA-Z_/\\.]*\\.\\(c\\|o\\|cpp\\)'",exepath,targetName);
+			
+			GMR_DEBUG("RUNNING TARGET: %s -> %s\n",targetName,exestring);
+			
+			fp=shell_execute_from_buffer(exestring);
+
+			//Read the output a line at a time - output it.
+			while(fgets(path, sizeof(path), fp) != NULL)
+			{
+				GMR_DEBUG("got recepie: %s\n",path);
+				gmr_target_parse_recipie(target,path);
+			}
+
+			pclose(fp);
+		}
 	}
 }
 
@@ -116,7 +123,7 @@ void gmr_makefile_init_targets(GmrMakefile *self)
 	
 	// Open the command for reading.
 	sprintf(exestring,"cd %s && make -qp",path);
-			
+	
 	fp=shell_execute_from_buffer(exestring);
 
 	// Read the output a line at a time - output it.
