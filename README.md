@@ -25,6 +25,11 @@ make run -j
 to make a tags file with gmr, do something like:
 
 ```shell
-gmr -f -tall |& grep -P '^.+\.[ch]$' | etags -
+gmr -f -tall |& grep -P '^.+\.[ch].{0,2}$' | etags -
 ```
 
+Like
+
+```shell
+alias gmru='gmr -f -tall |& grep -P "^.+\.[ch].{0,2}$" | etags -'
+```
