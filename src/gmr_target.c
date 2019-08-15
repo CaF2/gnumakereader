@@ -170,38 +170,36 @@ void gmr_target_parse_recipie(GmrTarget *self, const char *input)
 			gsize wordlen = strlen(word);
 			
 			GmrMakefile *curr_makefile = self->parent;
-			
-			GString *current_directory = curr_makefile->current_directory;
 
 			GMR_DEBUG("changing directory to ... :: %s\n",word);
 
-			if(current_directory)
+			if(curr_makefile->current_directory)
 			{
-				if(current_directory->len<wordlen)
+				int add=1;
+				if(curr_makefile->current_directory->len>0)
 				{
-					curr_makefile->current_directory=g_string_append(current_directory,word);
+					const char *str=g_ptr_array_index(curr_makefile->current_directory,curr_makefile->current_directory->len-1);
+					if(g_strcmp0(str,word)==0)
+					{
+						add=0;
+					}
+				}
+			
+				if(add)
+				{
+					g_ptr_array_add(curr_makefile->current_directory,g_strdup(word));
 				}
 				else
 				{
-					gsize after_eventual_match_len=current_directory->len-wordlen;
-					gchar *eventual_match=current_directory->str+after_eventual_match_len;
-				
-					if(strcmp(eventual_match,word)==0)
-					{
-						curr_makefile->current_directory=g_string_truncate(current_directory,after_eventual_match_len);
-					}
-					else
-					{
-						curr_makefile->current_directory=g_string_append(current_directory,word);
-					}
+					g_ptr_array_remove_index(curr_makefile->current_directory,curr_makefile->current_directory->len-1);
 				}
 			}
 			else
 			{
-				curr_makefile->current_directory=g_string_append(current_directory,word);
+				GMR_ERROR("Something went wrong when adding a directory!");
 			}
 			
-			GMR_DEBUG("curr current_directory:: %s\n",curr_makefile->current_directory->str);
+/*			GMR_DEBUG("curr current_directory:: %s\n",curr_makefile->current_directory->str);*/
 
 			g_match_info_next(matchInfo, NULL);
 		}

@@ -160,9 +160,13 @@ GmrFile *gmr_file_add(const char *filename, const char *source, GmrTarget *targe
 {
 	g_autofree char *actual_filename;
 	
-	if(target->parent->current_directory->len>0)
+	g_autofree char *directory_path=gmr_makefile_get_current_directory(target->parent);
+	
+	printf("DIR_PATH:: %s\n",directory_path);
+	
+	if(target->parent->current_directory->len>0 && !is_root_path(filename))
 	{
-		asprintf(&actual_filename,"%s/%s",target->parent->current_directory->str,filename);
+		asprintf(&actual_filename,"%s/%s",directory_path,filename);
 	}
 	else
 	{

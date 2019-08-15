@@ -14,7 +14,7 @@
 struct GmrMakefile
 {
 	char *path; ///< path to this makefile
-	GString *current_directory;
+	GPtrArray *current_directory;
 
 	GList *targets; ///< a list with all targets (GmrTarget*)
 	

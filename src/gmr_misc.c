@@ -53,3 +53,24 @@ char *gmr_get_include_strings(const char *command)
 	
 	return g_string_free(g_steal_pointer(&idirsstr),FALSE);
 }
+
+static GRegex *if_root_regex=NULL;
+
+/**
+	Check if it is a root path.
+	
+	@param filename
+		root filename path
+	@returns
+		non-0 on success
+*/
+int is_root_path(const char *filename)
+{
+	if(if_root_regex==NULL)
+	{
+		if_root_regex=g_regex_new ("^[\\t\\ ]*(/|([a-zA-Z]{2,6}://))", 0, 0, NULL);
+	}
+	
+	return g_regex_match(if_root_regex,filename,0,NULL)!=FALSE;
+}
+	

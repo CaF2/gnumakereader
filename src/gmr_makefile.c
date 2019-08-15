@@ -23,7 +23,7 @@ GmrMakefile *gmr_makefile_init(GmrMakefile *self,const char *path, const char *u
 {
 	self->path=g_strdup(path);
 	self->files=NULL;
-	self->current_directory=g_string_sized_new(100);
+	self->current_directory=g_ptr_array_new_full(5,g_free);
 	
 	gmr_makefile_init_targets(self);
 	
@@ -47,7 +47,7 @@ void gmr_makefile_finalize(GmrMakefile *self)
 
 	g_list_free_full(self->targets,gmr_target_free_wrapper);
 	
-	g_string_free(self->current_directory,TRUE);
+	g_ptr_array_free(self->current_directory,TRUE);
 }
 
 /**
@@ -200,6 +200,42 @@ GmrFile *gmr_makefile_check_file(GmrMakefile *self, GmrFile *file)
 	}
 	
 	return NULL;
+}
+
+/**
+	Gets the current makefile itr path.
+	
+	@param self
+		makefile
+	@returns
+		the directory specified
+*/
+char *gmr_makefile_get_current_directory(GmrMakefile *self)
+{
+	GString *output=g_string_sized_new(100);
+	
+	for(guint i=0;i<self->current_directory->len;i++)
+	{
+		const char *str=g_ptr_array_index(self->current_directory,i);
+		
+		printf("DIR:: %s\n",str);
+	}
+	
+	for(guint i=self->current_directory->len-1;i>=0;i--)
+	{
+		const char *str=g_ptr_array_index(self->current_directory,i);
+		
+		g_string_prepend(output,str);
+		
+		if(is_root_path(str))
+		{
+			break;
+		}
+	}
+	
+	printf("DIR_RES:: %s\n",output->str);
+	
+	return g_string_free(output,FALSE);
 }
 
 /**

@@ -30,5 +30,6 @@ typedef struct GmrTarget GmrTarget;
 #define GMR_VERBOSE gmr_verbose_get()
 
 #define GMR_DEBUG(...) if(GMR_VERBOSE) printf(__VA_ARGS__)
+#define GMR_ERROR(...) printf(__VA_ARGS__)
 
 #define GMR_FILE_N(filename_in,directory_in) memcpy(malloc(sizeof(GmrFile)),&(GmrFile){.filename=strdup(filename_in),.directory=strdup(directory_in)},sizeof(GmrFile))
