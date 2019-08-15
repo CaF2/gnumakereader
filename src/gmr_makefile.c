@@ -214,14 +214,7 @@ char *gmr_makefile_get_current_directory(GmrMakefile *self)
 {
 	GString *output=g_string_sized_new(100);
 	
-	for(guint i=0;i<self->current_directory->len;i++)
-	{
-		const char *str=g_ptr_array_index(self->current_directory,i);
-		
-		printf("DIR:: %s\n",str);
-	}
-	
-	for(guint i=self->current_directory->len-1;i>=0;i--)
+	for(long i=((long)self->current_directory->len)-1;i>=0;i--)
 	{
 		const char *str=g_ptr_array_index(self->current_directory,i);
 		
@@ -232,8 +225,6 @@ char *gmr_makefile_get_current_directory(GmrMakefile *self)
 			break;
 		}
 	}
-	
-	printf("DIR_RES:: %s\n",output->str);
 	
 	return g_string_free(output,FALSE);
 }
