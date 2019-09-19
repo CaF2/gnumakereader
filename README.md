@@ -39,3 +39,11 @@ Same for other tag parsers:
 ```shell
 gmr -f -tall |& grep -P "^.+\.[ch].{0,2}$" | ctags -L -
 ```
+
+## TODO
+
+Example of GLOBAL, currently i have:
+
+```shell
+FILES=$(realpath $(gmr -f -tall |& grep -P "^.+\.[ch].{0,2}$")); CURR_PATH=$(pwd); cd /; echo "$FILES" | MAKEOBJDIRPREFIX="$CURR_PATH" gtags --objdir -f -; cd $CURR_PATH
+```shell
