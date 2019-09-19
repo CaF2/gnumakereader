@@ -93,7 +93,7 @@ void gmr_target_parse_recipie(GmrTarget *self, const char *input)
 		g_autoptr(GMatchInfo) matchInfo=NULL;
 		
 		//only check for filenames, or something that looks like a filename
-		g_autoptr(GRegex) regex=g_regex_new("[0-9a-zA-Z_/\\.\\-]*\\.[a-zA-Z]{1,4}(?=(\\ |\\(|\\)))",0,0,NULL);
+		g_autoptr(GRegex) regex=g_regex_new("[0-9a-zA-Z_/\\.\\-]*\\.[a-zA-Z]{1,4}",0,0,NULL);
 
 		g_regex_match(regex, input, 0, &matchInfo);
 		
@@ -114,7 +114,7 @@ void gmr_target_parse_recipie(GmrTarget *self, const char *input)
 	{
 		g_autoptr(GMatchInfo) matchInfo=NULL;
 	
-		g_autoptr(GRegex) regex=g_regex_new("(?<=(-))[0-9a-zA-Z_/\\.\\-]+(?=(\\ |\\(|\\)))",0,0,NULL);
+		g_autoptr(GRegex) regex=g_regex_new("(?<=(-))[0-9a-zA-Z_/\\.\\-]+",0,0,NULL);
 
 		g_regex_match(regex, input, 0, &matchInfo);
 		
