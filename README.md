@@ -33,3 +33,9 @@ Like
 ```shell
 alias gmru='gmr -f -tall |& grep -P "^.+\.[ch].{0,2}$" | etags --declarations -'
 ```
+
+Same for other tag parsers:
+
+```shell
+gmr -f -tall |& grep -P "^.+\.[ch].{0,2}$" | ctags -L -
+```
